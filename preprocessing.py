@@ -22,6 +22,15 @@ def extract_image_features(image_file, model):
     return model(image_tensor)
 
 
+def pre_process_caption(caption:str):
+    # convert to lower case
+    caption = caption.lower()
+    caption = caption.replace("[^A-Za-z]", "")
+    caption = caption.replace("\s+", " ")
+    caption = " ".join([word for word in caption.split() if len(word)>1 ])
+    caption = f"startseq  {caption} endseq"
+    return caption
+
 def create_id_caption_mapping(file):
     mapping = defaultdict(list)
     with open(file, "r") as f:
@@ -32,8 +41,10 @@ def create_id_caption_mapping(file):
             # remove image extension
             img_id = img_id.split(".")[0]
             img_caption = line.split()[1:]
-            mapping[img_id].append(" ".join(img_caption))
+            caption = " ".join(img_caption)
+            mapping[img_id].append(pre_process_caption(caption))
     return mapping
+
 
 
 if __name__ == "__main__":
