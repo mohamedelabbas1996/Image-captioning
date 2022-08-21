@@ -3,6 +3,7 @@ import torchvision
 from PIL import Image
 import pickle
 import tqdm
+import os
 from collections import defaultdict
 
 
@@ -46,8 +47,24 @@ def create_id_caption_mapping(file):
     return mapping
 
 
+def prepare_sequence_teacher_forcing(id_caption_mapping, features):
+    data = []
+    for img_id, captions in id_caption_mapping.items():
+        for caption in captions:
+            for idx, word in enumerate(caption.split()):
+                data.append([features[img_id], caption.split()[:idx], word])
+    yield data
+
+
+
+
+
 
 if __name__ == "__main__":
-    for img_id,caption in create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt").items():
-        print (img_id, caption)
-        break
+    # for img_id,caption in create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt").items():
+    #     print (img_id, caption)
+    #     break
+    features = {"abcd": [1,2,3]}
+    mapping = {"abcd" : ["the girl is fat"]}
+    for sample in prepare_sequence_teacher_forcing(mapping,features):
+        print (sample)

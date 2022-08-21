@@ -11,7 +11,7 @@ IMAGES = "data/Flicker8k_Dataset"
 
 
 def main():
-
+    pass
 
 
 if __name__ == "__main__":
