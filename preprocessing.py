@@ -32,8 +32,10 @@ def pre_process_caption(caption:str):
     caption = f"startseq  {caption} endseq"
     return caption
 
+
 def create_id_caption_mapping(file):
     mapping = defaultdict(list)
+    captions = list()
     with open(file, "r") as f:
         for line in f.readlines():
             img_id = line.split()[0]
@@ -43,17 +45,19 @@ def create_id_caption_mapping(file):
             img_id = img_id.split(".")[0]
             img_caption = line.split()[1:]
             caption = " ".join(img_caption)
+            captions.append(caption)
             mapping[img_id].append(pre_process_caption(caption))
-    return mapping
+    return mapping, captions
 
 
-def prepare_sequence_teacher_forcing(id_caption_mapping, features):
+def prepare_sequence_teacher_forcing(id_caption_mapping, features, tokenizer):
     data = []
     for img_id, captions in id_caption_mapping.items():
         for caption in captions:
-            for idx, word in enumerate(caption.split()):
-                data.append([features[img_id], caption.split()[:idx], word])
-    yield data
+            seq = tokenizer.texts_to_sequence(caption)
+            for idx, token in enumerate(seq):
+                data.append([features[img_id], seq[:idx], token])
+    return data
 
 
 
@@ -64,7 +68,10 @@ if __name__ == "__main__":
     # for img_id,caption in create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt").items():
     #     print (img_id, caption)
     #     break
-    features = {"abcd": [1,2,3]}
-    mapping = {"abcd" : ["the girl is fat"]}
-    for sample in prepare_sequence_teacher_forcing(mapping,features):
-        print (sample)
+    print("hello")
+    # features = {"abcd": [1,2,3]}
+    # mapping = {"abcd" : ["the girl is fat"]}
+    # tokenizer = Tokenizer()
+    # tokenizer.fit_on_texts(mapping["abcd"])
+    # for sample in prepare_sequence_teacher_forcing(mapping,features,tokenizer):
+    #     print (sample)

@@ -47,7 +47,7 @@ class EncoderDecoder(torch.nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
-    def forward(self,img_feature, caption_sequence):
+    def forward(self, img_feature, caption_sequence):
         encoder_output = self.encoder(img_feature, caption_sequence)
         decoder_output = self.decoder(encoder_output)
         return decoder_output
