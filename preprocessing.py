@@ -5,8 +5,11 @@ import pickle
 import tqdm
 import os
 from collections import defaultdict
+from tokenizer import Tokenizer
 
 
+def pad_sequence(seq, maxlen):
+    return [0]*(maxlen- len(seq)) + seq
 def extract_features(directory, model, save=True):
     features = dict()
     for image in tqdm.tqdm(os.listdir(directory)):
@@ -50,13 +53,15 @@ def create_id_caption_mapping(file):
     return mapping, captions
 
 
-def prepare_sequence_teacher_forcing(id_caption_mapping, features, tokenizer):
+def prepare_sequence_teacher_forcing(id_caption_mapping, features, tokenizer,maxlength, vocab_size):
     data = []
     for img_id, captions in id_caption_mapping.items():
         for caption in captions:
-            seq = tokenizer.texts_to_sequence(caption)
+            seq = tokenizer.text_to_sequence(caption)
             for idx, token in enumerate(seq):
-                data.append([features[img_id], seq[:idx], token])
+                padded_seq = pad_sequence(seq[:idx], maxlen=maxlength)
+                one_hot_output = torch.nn.functional.one_hot(torch.tensor([token]), num_classes = vocab_size+1).tolist()[0]
+                data.append([features[img_id],padded_seq, one_hot_output])
     return data
 
 
@@ -68,10 +73,11 @@ if __name__ == "__main__":
     # for img_id,caption in create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt").items():
     #     print (img_id, caption)
     #     break
-    print("hello")
-    # features = {"abcd": [1,2,3]}
-    # mapping = {"abcd" : ["the girl is fat"]}
-    # tokenizer = Tokenizer()
-    # tokenizer.fit_on_texts(mapping["abcd"])
-    # for sample in prepare_sequence_teacher_forcing(mapping,features,tokenizer):
-    #     print (sample)
+    print (pad_sequence([1,2,3],2))
+    features = {"abcd": [1,2,3]}
+    mapping = {"abcd" : ["the girl is fat"]}
+    tokenizer = Tokenizer()
+    tokenizer.fit_text(mapping["abcd"])
+    for sample in prepare_sequence_teacher_forcing(mapping,features,tokenizer,0,tokenizer.vocab_size):
+        print (sample)
+

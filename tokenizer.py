@@ -13,23 +13,29 @@ class Tokenizer:
             sentence = _preprocess(sentence)
             for token in set (self.tokenize(sentence)):
                 if token not in self.tokens:
-                    self.tokens[token] = self.vocab_size
                     self.vocab_size += 1
+                    self.tokens[token] = self.vocab_size
 
 
 
 
+    def _tokenize_string(self,sentence):
+        sequence = []
+        for token in self.tokenize(sentence):
+            if token in self.tokens:
+                sequence.append(self.tokens[token])
+        return sequence
     def text_to_sequence(self,text):
+        if isinstance(text,str):
+            return self._tokenize_string(text)
         sequences = []
         for sentence in text:
             sentence = _preprocess(sentence)
-            sequence = []
-            for token in self.tokenize(sentence):
-                if token in self.tokens:
-                    sequence.append(self.tokens[token])
+            sequence = self._tokenize_string(sentence)
             sequences.append(sequence)
+
         return sequences
 if __name__  == "__main__":
     tokenizer = Tokenizer()
-    tokenizer.fit_text(["i am tall", "i am fat","my fat is mohamed"])
-    print(tokenizer.text_to_sequence(["i fat", "my name is mohamed"]))
+    tokenizer.fit_text(["the girl is fat"])
+    print(tokenizer.text_to_sequence("the girl is fat"))
