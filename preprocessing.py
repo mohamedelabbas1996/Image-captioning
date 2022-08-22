@@ -10,6 +10,8 @@ from tokenizer import Tokenizer
 
 def pad_sequence(seq, maxlen):
     return [0]*(maxlen- len(seq)) + seq
+
+
 def extract_features(directory, model, save=True):
     features = dict()
     for image in tqdm.tqdm(os.listdir(directory)):
@@ -63,10 +65,6 @@ def prepare_sequence_teacher_forcing(id_caption_mapping, features, tokenizer,max
                 one_hot_output = torch.nn.functional.one_hot(torch.tensor([token]), num_classes = vocab_size+1).tolist()[0]
                 data.append([features[img_id],padded_seq, one_hot_output])
     return data
-
-
-
-
 
 
 if __name__ == "__main__":
