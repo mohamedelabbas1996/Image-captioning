@@ -5,6 +5,7 @@ import pickle
 import tqdm
 import os
 from collections import defaultdict
+from model import get_vgg16
 from tokenizer import Tokenizer
 
 
@@ -12,12 +13,19 @@ def pad_sequence(seq, maxlen):
     return [0]*(maxlen- len(seq)) + seq
 
 
-def extract_features(directory, model, save=True):
+def extract_features(directory, model,load_from_file=None, save_to_file=None, n_images=300):
     features = dict()
-    for image in tqdm.tqdm(os.listdir(directory)):
-        features[image] = extract_image_features(directory + "/" + image, model)
-    if save:
-        pickle.dump(features, open("features.pkl", "wb"))
+    if load_from_file:
+        with open(load_from_file,"rb") as file:
+            features = pickle.load(file)
+        return features
+    if not n_images:
+        n_images = len(os.listdir(directory))
+    for image in tqdm.tqdm(os.listdir(directory)[:n_images]):
+        img_id = image.split(".")[0]
+        features[img_id] = extract_image_features(directory + "/" + image, model)
+    if save_to_file:
+        pickle.dump(features, open(save_to_file, "wb"))
     return features
 
 
@@ -38,10 +46,10 @@ def pre_process_caption(caption:str):
     return caption
 
 
-def create_id_caption_mapping(file):
+def create_id_caption_mapping(captions_file):
     mapping = defaultdict(list)
     captions = list()
-    with open(file, "r") as f:
+    with open(captions_file, "r") as f:
         for line in f.readlines():
             img_id = line.split()[0]
             # remove the caption number
@@ -58,24 +66,29 @@ def create_id_caption_mapping(file):
 def prepare_sequence_teacher_forcing(id_caption_mapping, features, tokenizer,maxlength, vocab_size):
     data = []
     for img_id, captions in id_caption_mapping.items():
+        if img_id not in features:
+            continue
         for caption in captions:
             seq = tokenizer.text_to_sequence(caption)
             for idx, token in enumerate(seq):
-                padded_seq = pad_sequence(seq[:idx], maxlen=maxlength)
-                one_hot_output = torch.nn.functional.one_hot(torch.tensor([token]), num_classes = vocab_size+1).tolist()[0]
+                padded_seq = torch.tensor(pad_sequence(seq[:idx], maxlen=maxlength))
+                one_hot_output = torch.tensor(torch.nn.functional.one_hot(torch.tensor([token]), num_classes = vocab_size).tolist()[0])
                 data.append([features[img_id],padded_seq, one_hot_output])
     return data
 
 
 if __name__ == "__main__":
-    # for img_id,caption in create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt").items():
+
+    mapping , captions = create_id_caption_mapping("data/Flickr8k_text/Flickr8k.token.txt")
+    print (max([len(caption) for caption in captions]))
     #     print (img_id, caption)
     #     break
-    print (pad_sequence([1,2,3],2))
-    features = {"abcd": [1,2,3]}
-    mapping = {"abcd" : ["the girl is fat"]}
-    tokenizer = Tokenizer()
-    tokenizer.fit_text(mapping["abcd"])
-    for sample in prepare_sequence_teacher_forcing(mapping,features,tokenizer,0,tokenizer.vocab_size):
-        print (sample)
+    #extract_features("data/Flicker8k_Dataset",get_vgg16())
+    # print (pad_sequence([1,2,3],2))
+    # features = {"abcd": [1,2,3]}
+    # mapping = {"abcd" : ["the girl is fat"]}
+    # tokenizer = Tokenizer()
+    # tokenizer.fit_text(mapping["abcd"])
+    # for sample in prepare_sequence_teacher_forcing(mapping,features,tokenizer,0,tokenizer.vocab_size):
+    #     print (sample)
 
