@@ -34,7 +34,7 @@ class Decoder(torch.nn.Module):
                 torch.nn.Linear(256,256),
                 torch.nn.ReLU(),
                 torch.nn.Linear(256,vocab_size),
-                torch.nn.Softmax(dim =1 )
+                torch.nn.Softmax()
             )
 
     def forward(self, encoded_features):
@@ -42,8 +42,8 @@ class Decoder(torch.nn.Module):
 
 
 class EncoderDecoder(torch.nn.Module):
-    def __int__(self,encoder, decoder):
-        super(EncoderDecoder, self).__int__()
+    def __init__(self,encoder, decoder):
+        super(EncoderDecoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
 
@@ -51,6 +51,15 @@ class EncoderDecoder(torch.nn.Module):
         encoder_output = self.encoder(img_feature, caption_sequence)
         decoder_output = self.decoder(encoder_output)
         return decoder_output
+class ImageCaptionNetwork (torch.nn.Module):
+    def __init__(self,vocab_size):
+        super().__init__()
+        encoder = Encoder(vocab_size)
+        decoder = Decoder(vocab_size)
+        self.model = EncoderDecoder(encoder,decoder)
+    def forward(self, img_feature, caption_sequence):
+        return self.model(img_feature, caption_sequence)
+
 if __name__ == "__main__":
     encoder = Encoder(vocab_size= 4)
     feature = torch.randn(1,256)
