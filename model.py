@@ -1,70 +1,60 @@
-import torchvision
 import torch
+import torchvision
 
 
-def get_vgg16():
-    vgg16 = torchvision.models.vgg16()
-    vgg16.classifier[6] = torch.nn.Identity()
-    return vgg16
-
-
-class Encoder(torch.nn.Module):
-    def __init__(self,vocab_size):
+class EncoderCNN(torch.nn.Module):
+    def __init__(self, embed_size):
         super().__init__()
-        self.img_features = torch.nn.Sequential(
-            torch.nn.Dropout(0.4),
-            torch.nn.Linear(4096,256),
-            torch.nn.ReLU()
-        )
-        self.sequence = torch.nn.Sequential(
-            torch.nn.Embedding(vocab_size, 256),
-            torch.nn.Dropout(0.4),
-            torch.nn.LSTM(256,256)
+        self.cnn = torchvision.models.inception_v3(pretrained=True, aux_logits=False)
+        self.cnn.fc = torch.nn.Linear(self.cnn.fc.in_features, embed_size)
+        for name, param in self.cnn.named_parameters():
+            if 'fc' not in name:
+                param.requires_grad = False
 
-        )
-
-    def forward(self, img_feature, caption_sequence):
-        return torch.add(self.img_features(img_feature), self.sequence(caption_sequence)[0])
+    def forward(self, x):
+        return self.cnn(x)
 
 
-class Decoder(torch.nn.Module):
-    def __init__(self, vocab_size):
+# create model
+
+class ImageCaption(torch.nn.Module):
+    def __init__(self, embed_size, vocab_size, hidden_size, num_layers):
         super().__init__()
-        self.layers = torch.nn.Sequential(
-                torch.nn.Linear(256,256),
-                torch.nn.ReLU(),
-                torch.nn.Linear(256,vocab_size),
-                torch.nn.Softmax()
-            )
+        self.vocab_size = vocab_size
+        self.cnn = EncoderCNN(embed_size)
+        self.batchnorm = torch.nn.BatchNorm1d(num_features=embed_size)
+        self.dropout = torch.nn.Dropout(0.5)
+        self.embed = torch.nn.Embedding(embedding_dim=embed_size, num_embeddings=vocab_size)
+        self.lstm = torch.nn.LSTM(input_size=embed_size, hidden_size=hidden_size, num_layers=num_layers,
+                                  batch_first=True)
+        self.linear = torch.nn.Linear(hidden_size, vocab_size)
+        self.relu = torch.nn.ReLU()
 
-    def forward(self, encoded_features):
-        return self.layers(encoded_features)
+    def forward(self, image, caption):
+        # print (image.shape)
+        # image embedding
+        img_features = self.dropout(image)
+        img_features = self.cnn(img_features)
 
+        img_features = img_features.unsqueeze(1)
+        # print ("img_features ", img_features.shape)
+        # text embedding
+        embed = self.embed(caption)
+        embed = self.dropout(embed)
+        # print ("text embedding ", embed.shape)
 
-class EncoderDecoder(torch.nn.Module):
-    def __init__(self,encoder, decoder):
-        super(EncoderDecoder, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        # image encoding using lstm
+        _, h = self.lstm(img_features)
+        # print ('img_features embedding', h[0].shape, h[1].shape)
 
-    def forward(self, img_feature, caption_sequence):
-        encoder_output = self.encoder(img_feature, caption_sequence)
-        decoder_output = self.decoder(encoder_output)
-        return decoder_output
-class ImageCaptionNetwork (torch.nn.Module):
-    def __init__(self,vocab_size):
-        super().__init__()
-        encoder = Encoder(vocab_size)
-        decoder = Decoder(vocab_size)
-        self.model = EncoderDecoder(encoder,decoder)
-    def forward(self, img_feature, caption_sequence):
-        return self.model(img_feature, caption_sequence)
+        output, _ = self.lstm(embed, h)
+        # print ("lstm output shape " ,output.shape)
 
-if __name__ == "__main__":
-    encoder = Encoder(vocab_size= 4)
-    feature = torch.randn(1,256)
-    # caption = torch.tensor([1,2,3])
-    # print(encoder(feature,caption))
+        # passing output through linear layer to convert to shape
+        output = self.linear(output)
+        output = output.view(-1, self.vocab_size)
 
-    decoder = Decoder(vocab_size=4)
-    print(decoder (feature))
+        return output
+
+    def generate_caption(self, image_file, word_map):
+        pass

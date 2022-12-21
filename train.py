@@ -1,33 +1,25 @@
-import torch.nn
-
-from model import ImageCaptionNetwork
-from torch.optim import Adam
-from dataset import ImageCaptionsDataset
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-def train(dataloader , optimizer, model, criterion , n_epochs):
-    for epoch in (range(n_epochs)):
-        for img_feature, caption_sequence , output_token in tqdm(dataloader):
-            #print (img_feature.shape,caption_sequence.shape,output_token.shape)
-            output = model(img_feature,caption_sequence)
-            print(output_token.shape)
-            optimizer.zero_grad()
-            loss = criterion(output,torch.tensor(output_token))
-            print (loss.item())
-            loss.backward()
-            optimizer.step()
+import tqdm
 
 
-
-
-if __name__ == "__main__":
-    dataset = ImageCaptionsDataset("data/Flicker8k_Dataset", "data/Flickr8k_text/Flickr8k.token.txt")
-    loader = DataLoader(dataset, batch_size= 16, shuffle= True)
-    loss = torch.nn.CrossEntropyLoss()
-    vocab_size = 8918
-    model = ImageCaptionNetwork(vocab_size)
-    optimizer = Adam(params= model.parameters())
-
-    train(loader, optimizer,model,loss,1)
-
-
+def train(dataloader, optim, model, criterion, n_epochs, device, loss=0):
+    model.train()
+    for epoch in range(n_epochs):
+        with tqdm.tqdm(dataloader, unit="batch") as tepoch:
+            losses = loss
+            for idx, (image, caption, target) in enumerate(tepoch):
+                image, caption, target = image.to(device), caption.to(device), target.to(device)
+                target = target.view(-1)
+                # print ("target dim", target.shape)
+                model = model.train()
+                tepoch.set_description(f"Epoch {epoch}")
+                optim.zero_grad()
+                output = model(image, caption)
+                # print ("caption shape", caption.shape)
+                # print ("output shape", output.shape)
+                # print(output.shape, output_token.shape )
+                # print (output.dtype , target_token.dtype , output.shape, target_token.shape)
+                loss = criterion(output, target)
+                losses += loss.item()
+                tepoch.set_postfix(loss=f"{losses / (idx + 1):0.4f}")
+                loss.backward()
+                optim.step()
