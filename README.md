@@ -15,7 +15,7 @@ Clone the repository
 
 Install the dependencies:
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 ## Usage
 Preprocessing
