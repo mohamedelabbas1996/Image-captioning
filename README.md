@@ -10,6 +10,7 @@ Requirements
 Clone the repository
 
 `git clone https://github.com/mohamedelabbas1996/Image-captioning`
+
 `cd Image-captioning`
 
 Install the dependencies:
