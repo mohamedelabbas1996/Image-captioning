@@ -37,7 +37,8 @@ To evaluate the model's performance on the validation set, run the following com
 `python eval.py`
 
 This will generate the evaluation metrics, such as the BLEU score, for the model.
-Generation
+
+### Generation
 
 To generate captions for new images, run the following command:
 
