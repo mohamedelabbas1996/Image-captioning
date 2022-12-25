@@ -18,17 +18,19 @@ Install the dependencies:
 `pip install -r requirements.txt`
 
 ## Usage
-Preprocessing
+### Preprocessing
 
 Before you can train the model, you need to preprocess the dataset. Depending on the dataset you are using, you may need to resize the images and tokenize the captions into a vocabulary. Follow the instructions in the preprocess.py file to preprocess the dataset.
-Training
+
+### Training
 
 To train the model, run the following command:
 
 `python train.py`
 
 This will start the training process, which may take several hours or days depending on the size of the dataset and the complexity of the model.
-Evaluation
+
+### Evaluation
 
 To evaluate the model's performance on the validation set, run the following command:
 
