@@ -18,7 +18,7 @@ Install the dependencies:
 `pip install -r requirements.txt`
 
 ## Usage
-`usage: main.py [-h] [--image_file IMAGE_FILE] [--checkpoint CHECKPOINT] [--n-epochs N_EPOCHS] [--learning-rate LEARNING_RATE] [--batch-size BATCH_SIZE] mode
+```usage: main.py [-h] [--image_file IMAGE_FILE] [--checkpoint CHECKPOINT] [--n-epochs N_EPOCHS] [--learning-rate LEARNING_RATE] [--batch-size BATCH_SIZE] mode
 
 positional arguments:
   mode                  operation mode can be test or train
@@ -33,4 +33,4 @@ optional arguments:
   --learning-rate LEARNING_RATE
                         optimizer learning rate
   --batch-size BATCH_SIZE
-                        Training batch size`
+                        Training batch size```
