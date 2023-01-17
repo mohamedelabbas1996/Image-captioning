@@ -18,30 +18,19 @@ Install the dependencies:
 `pip install -r requirements.txt`
 
 ## Usage
-### Preprocessing
+usage: main.py [-h] [--image_file IMAGE_FILE] [--checkpoint CHECKPOINT] [--n-epochs N_EPOCHS] [--learning-rate LEARNING_RATE] [--batch-size BATCH_SIZE] mode
 
-Before you can train the model, you need to preprocess the dataset. Depending on the dataset you are using, you may need to resize the images and tokenize the captions into a vocabulary. Follow the instructions in the preprocess.py file to preprocess the dataset.
+positional arguments:
+  mode                  operation mode can be test or train
 
-### Training
-
-To train the model, run the following command:
-
-`python train.py`
-
-This will start the training process, which may take several hours or days depending on the size of the dataset and the complexity of the model.
-
-### Evaluation
-
-To evaluate the model's performance on the validation set, run the following command:
-
-`python eval.py`
-
-This will generate the evaluation metrics, such as the BLEU score, for the model.
-
-### Generation
-
-To generate captions for new images, run the following command:
-
-`python generate.py --image path/to/image.jpg`
-
-This will pass the image through the encoder and use the decoder to generate the caption.
+optional arguments:
+  -h, --help            show this help message and exit
+  --image_file IMAGE_FILE
+                        path to image file to generate caption for
+  --checkpoint CHECKPOINT
+                        path for model checkpoint
+  --n-epochs N_EPOCHS   number of epochs for training
+  --learning-rate LEARNING_RATE
+                        optimizer learning rate
+  --batch-size BATCH_SIZE
+                        Training batch size
