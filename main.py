@@ -68,4 +68,5 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(mode=args.mode)
+    main(mode=args.mode, img_file=args.image_file, checkpoint=args.checkpoint, n_epochs=args.n_epochs, learning_rate=args.learning_rate,
+         batch_size=args.batch_size)
