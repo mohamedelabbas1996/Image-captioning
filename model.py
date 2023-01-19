@@ -56,5 +56,58 @@ class ImageCaption(torch.nn.Module):
 
         return output
 
-    def generate_caption(self, image_file, word_map):
-        pass
+    def generate_caption(self, image_file, word_map, maxlen=46):
+        """
+        Generates a caption for a given image file using image features extracted from the Inception net, and a word map.
+
+        Parameters:
+            - image_file (str): path to the image file
+            - word_map (WordMapping): an object that contains the mapping between words and their corresponding token IDs
+            - maxlen (int): maximum length of the generated caption
+
+        Returns:
+            - str: the generated caption
+        """
+        # Open image file
+        image = PIL.Image.open(image_file)
+
+        # Apply image transforms
+        transforms = get_transforms()
+        image = transforms(image)
+        image = image.unsqueeze(0)
+
+        # Extract image features using Inception net
+        img_features = self.cnn(image)
+
+        # Generate hidden and cell state by passing image features to the LSTM
+        _, h = self.lstm(img_features)
+
+        # Initialize list to store generated caption
+        generated_caption = []
+
+        # Start with the "startseq" token
+        caption = "startseq"
+
+        # Tokenize the caption
+        tokenized_caption = torch.tensor(word_map.tokenize_string(caption))
+
+        # Iterate for the maximum length of the caption
+        for _ in range(maxlen):
+            # Embed the tokenized caption
+            embed = self.embed(tokenized_caption)
+
+            # Pass the embedded caption through the LSTM
+            tokenized_caption, h = self.lstm(embed, h)
+
+            # Get the index of the maximum value in the output
+            tokenized_caption = tokenized_caption.argmax(dim=1)
+
+            # If the token corresponds to "endseq", end the caption generation
+            if word_map.token_to_word(tokenized_caption.item()) == 'endseq':
+                break
+
+            # Add the token to the generated caption
+            generated_caption.append(tokenized_caption.item())
+
+        # Convert the generated caption to text using the word map
+        return word_map.sequence_to_text(generated_caption)
