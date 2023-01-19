@@ -17,6 +17,8 @@ Install the dependencies:
 
 `pip install -r requirements.txt`
 
+Download the [Flickr8k](https://www.kaggle.com/datasets/adityajn105/flickr8k) dataset and copy the dataset to the project directory
+
 ## Usage
 ```
 usage: main.py [-h] [--image_file IMAGE_FILE] [--checkpoint CHECKPOINT] [--n-epochs N_EPOCHS] [--learning-rate LEARNING_RATE] [--batch-size BATCH_SIZE] mode
