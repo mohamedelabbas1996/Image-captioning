@@ -1,7 +1,7 @@
 # Image-captioning
 ## Description
 
-This project implements an image captioning model using PyTorch, a deep learning framework. The model consists of two main components: an encoder and a decoder. The encoder is a convolutional neural network (CNN) that takes an image as input and produces a fixed-length vector representation of the image. The decoder is a recurrent neural network (RNN) that takes the image representation and generates a sequence of words, one at a time, to form the final caption.
+This project implements an image captioning model using PyTorch. The model consists of two main components: an encoder and a decoder. The encoder is a convolutional neural network (CNN) that takes an image as input and produces a fixed-length vector representation of the image. The decoder is a recurrent neural network (RNN) that takes the image representation and generates a sequence of words, one at a time, to form the final caption.
 
 
 
